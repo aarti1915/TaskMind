@@ -1,5 +1,5 @@
 from sqlalchemy import Integer, String, Boolean, DateTime
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import date
 
 from app.database.base import Base
@@ -69,6 +69,12 @@ class User(Base):
         server_default=func.now(),
         onupdate=func.now(),
         nullable=False
+    )
+
+    subjects = relationship(
+    "Subject",
+    back_populates="user",
+    cascade="all, delete-orphan"
     )
 
     
