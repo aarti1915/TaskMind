@@ -5,6 +5,7 @@ from app.models import user
 from app.models import subject
 from app.models import topic
 from app.models import sub_topic
+from app.models import study_session
 
 
 def create_tables():

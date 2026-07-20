@@ -44,3 +44,9 @@ class SubTopic(Base):
         "Topic",
         back_populates="sub_topics"
     )
+
+    study_sessions = relationship(
+    "StudySession",
+    back_populates="sub_topic",
+    cascade="all, delete-orphan"
+    )
