@@ -1,23 +1,37 @@
-from jose import jwt, JWTError
 from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+
+from jose import jwt, JWTError
+
 from sqlalchemy.orm import Session
 
 from app.database.connection import get_db
 from app.models import User
 
-from app.utils.token import SECRET_KEY, ALGORITHM
+import os
+from dotenv import load_dotenv
 
 
-oauth2_scheme = HTTPBearer()
+load_dotenv()
+
+
+SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+ALGORITHM = os.getenv("JWT_ALGORITHM")
+
+
+security = HTTPBearer()
+
 
 
 def get_current_user(
-    credentials = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(security),
     db: Session = Depends(get_db)
 ):
+
+    token = credentials.credentials
+
+
     try:
-        token = credentials.credentials
 
         payload = jwt.decode(
             token,
@@ -25,28 +39,36 @@ def get_current_user(
             algorithms=[ALGORITHM]
         )
 
-        user_id = payload.get("sub")
+
+        user_id = payload.get("user_id")
+
 
         if user_id is None:
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid authentication token"
+                status_code=401,
+                detail="Invalid token payload"
             )
 
-        user = db.query(User).filter(
-            User.user_id == int(user_id)
-        ).first()
-
-        if user is None:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="User not found"
-            )
-
-        return user
 
     except JWTError:
+
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authentication token"
+            status_code=401,
+            detail="Invalid token"
         )
+
+
+    user = db.query(User).filter(
+        User.user_id == user_id
+    ).first()
+
+
+    if user is None:
+
+        raise HTTPException(
+            status_code=401,
+            detail="User not found"
+        )
+
+
+    return user

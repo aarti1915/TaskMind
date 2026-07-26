@@ -37,40 +37,43 @@ def login(
     user: LoginRequest,
     db: Session = Depends(get_db)
 ):
-    statement = select(User).where(User.email == user.email)
+
+    statement = select(User).where(
+        User.email == user.email
+    )
 
     result = db.execute(statement)
 
     db_user = result.scalar_one_or_none()
 
+
     if db_user is None:
         return {
             "message": "User not found"
         }
-    
+
+
     password_valid = verify_password(
         user.password,
         db_user.password_hash
     )
+
 
     if not password_valid:
         return {
             "message": "Invalid password"
         }
 
+
     access_token = create_access_token(
         data={
-            "sub": str(db_user.user_id)
+            "user_id": db_user.user_id
         }
     )
+
 
     return {
         "access_token": access_token,
         "token_type": "bearer"
     }
-
-    return {
-        "email": db_user.email
-    }
-
 

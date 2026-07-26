@@ -4,18 +4,26 @@ from sqlalchemy import func
 
 from app.database.connection import get_db
 from app.utils.security import get_current_user
-from app.utils.time_format import format_duration
 
-from app.models import StudySession
+from app.models import (
+    StudySession,
+    Subject,
+    Topic,
+    SubTopic
+)
+
+from app.utils.time_format import format_duration
 
 
 router = APIRouter()
+
 
 @router.get("/dashboard/summary")
 def dashboard_summary(
     db: Session = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
+
     total_sessions = db.query(
         func.count(StudySession.session_id)
     ).filter(
@@ -24,48 +32,55 @@ def dashboard_summary(
 
 
     total_minutes = db.query(
-        func.sum(StudySession.duration_minutes)
-    ).filter(
-        StudySession.user_id == current_user.user_id
-    ).scalar()
-
-
-    if total_minutes is None:
-        total_minutes = 0
-
-
-    subjects_studied = db.query(
-        func.count(
-            func.distinct(StudySession.subject_id)
+        func.coalesce(
+            func.sum(StudySession.duration_minutes),
+            0
         )
     ).filter(
         StudySession.user_id == current_user.user_id
     ).scalar()
 
 
-    topics_studied = db.query(
-        func.count(
-            func.distinct(StudySession.topic_id)
-        )
+    total_subjects = db.query(
+        func.count(Subject.subject_id)
     ).filter(
-        StudySession.user_id == current_user.user_id
+        Subject.user_id == current_user.user_id
     ).scalar()
 
 
-    sub_topics_studied = db.query(
-        func.count(
-            func.distinct(StudySession.sub_topic_id)
-        )
+    total_topics = db.query(
+        func.count(Topic.topic_id)
+    ).join(
+        Subject
     ).filter(
-        StudySession.user_id == current_user.user_id
+        Subject.user_id == current_user.user_id
     ).scalar()
+
+
+    total_sub_topics = db.query(
+        func.count(SubTopic.sub_topic_id)
+    ).join(
+        Topic
+    ).join(
+        Subject
+    ).filter(
+        Subject.user_id == current_user.user_id
+    ).scalar()
+
 
 
     return {
-        "total_sessions": total_sessions,
-        "total_minutes": total_minutes,
-        "formatted_time": format_duration(total_minutes),
-        "subjects_studied": subjects_studied,
-        "topics_studied": topics_studied,
-        "sub_topics_studied": sub_topics_studied
+        "total_sessions": total_sessions or 0,
+
+        "total_minutes": total_minutes or 0,
+
+        "formatted_time": format_duration(
+            total_minutes or 0
+        ),
+
+        "subjects": total_subjects or 0,
+
+        "topics": total_topics or 0,
+
+        "sub_topics": total_sub_topics or 0
     }
