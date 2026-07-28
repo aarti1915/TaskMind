@@ -6,81 +6,164 @@ from app.database.connection import get_db
 from app.utils.security import get_current_user
 
 from app.models import (
-    StudySession,
     Subject,
     Topic,
-    SubTopic
+    SubTopic,
+    StudySession,
+    Task,
+    TaskStatus
 )
 
-from app.utils.time_format import format_duration
 
 
 router = APIRouter()
 
 
+
 @router.get("/dashboard/summary")
 def dashboard_summary(
+
     db: Session = Depends(get_db),
+
     current_user = Depends(get_current_user)
+
 ):
-
-    total_sessions = db.query(
-        func.count(StudySession.session_id)
-    ).filter(
-        StudySession.user_id == current_user.user_id
-    ).scalar()
-
-
-    total_minutes = db.query(
-        func.coalesce(
-            func.sum(StudySession.duration_minutes),
-            0
-        )
-    ).filter(
-        StudySession.user_id == current_user.user_id
-    ).scalar()
 
 
     total_subjects = db.query(
-        func.count(Subject.subject_id)
+        Subject
     ).filter(
+
         Subject.user_id == current_user.user_id
-    ).scalar()
+
+    ).count()
+
+
+
 
 
     total_topics = db.query(
-        func.count(Topic.topic_id)
-    ).join(
-        Subject
+        Topic
     ).filter(
-        Subject.user_id == current_user.user_id
-    ).scalar()
+
+        Topic.user_id == current_user.user_id
+
+    ).count()
+
+
+
 
 
     total_sub_topics = db.query(
-        func.count(SubTopic.sub_topic_id)
-    ).join(
-        Topic
-    ).join(
-        Subject
+        SubTopic
     ).filter(
-        Subject.user_id == current_user.user_id
-    ).scalar()
+
+        SubTopic.user_id == current_user.user_id
+
+    ).count()
+
+
+
+
+
+
+    total_tasks = db.query(
+        Task
+    ).filter(
+
+        Task.user_id == current_user.user_id
+
+    ).count()
+
+
+
+
+
+
+    completed_tasks = db.query(
+        Task
+    ).filter(
+
+        Task.user_id == current_user.user_id,
+
+        Task.status == TaskStatus.COMPLETED
+
+    ).count()
+
+
+
+
+
+
+    pending_tasks = db.query(
+        Task
+    ).filter(
+
+        Task.user_id == current_user.user_id,
+
+        Task.status == TaskStatus.PENDING
+
+    ).count()
+
+
+
+
+
+
+    total_sessions = db.query(
+        StudySession
+    ).filter(
+
+        StudySession.user_id == current_user.user_id
+
+    ).count()
+
+
+
+
+
+
+    total_minutes = db.query(
+        func.sum(
+            StudySession.duration_minutes
+        )
+
+    ).filter(
+
+        StudySession.user_id == current_user.user_id
+
+    ).scalar() or 0
+
+
+
 
 
 
     return {
-        "total_sessions": total_sessions or 0,
 
-        "total_minutes": total_minutes or 0,
 
-        "formatted_time": format_duration(
-            total_minutes or 0
-        ),
+        "subjects": total_subjects,
 
-        "subjects": total_subjects or 0,
 
-        "topics": total_topics or 0,
+        "topics": total_topics,
 
-        "sub_topics": total_sub_topics or 0
+
+        "sub_topics": total_sub_topics,
+
+
+        "total_tasks": total_tasks,
+
+
+        "completed_tasks": completed_tasks,
+
+
+        "pending_tasks": pending_tasks,
+
+
+        "total_sessions": total_sessions,
+
+
+        "total_minutes": total_minutes
+
+
     }

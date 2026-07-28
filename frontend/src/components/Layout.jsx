@@ -166,6 +166,22 @@ function Layout(){
                     </NavLink>
 
 
+                    <NavLink
+
+                    to="/planner"
+
+                    style={{
+                        color:"white",
+                        textDecoration:"none"
+                    }}
+
+                    >
+
+                    Daily Planner
+
+                    </NavLink>
+
+
 
 
 

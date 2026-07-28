@@ -15,3 +15,9 @@ from .analytics import (
     StreakResponse,
     PeriodAnalyticsResponse
 )
+
+from .task import (
+    TaskCreate,
+    TaskUpdate,
+    TaskResponse
+)

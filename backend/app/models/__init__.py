@@ -3,3 +3,4 @@ from .subject import Subject
 from .topic import Topic
 from .sub_topic import SubTopic
 from .study_session import StudySession
+from .task import Task, TaskPriority, TaskStatus

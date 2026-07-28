@@ -9,17 +9,25 @@ function Dashboard(){
 
     const [summary,setSummary] = useState({
 
-        total_sessions:0,
-
-        formatted_time:"0 min",
-
         subjects:0,
 
         topics:0,
 
-        sub_topics:0
+        sub_topics:0,
+
+        total_tasks:0,
+
+        completed_tasks:0,
+
+        pending_tasks:0,
+
+        total_sessions:0,
+
+        total_minutes:0
 
     });
+
+
 
 
 
@@ -39,6 +47,7 @@ function Dashboard(){
 
 
 
+
     const loadDashboard = async()=>{
 
 
@@ -49,12 +58,14 @@ function Dashboard(){
         );
 
 
-        setSummary(response.data);
+        setSummary(
+
+            response.data
+
+        );
 
 
     };
-
-
 
 
 
@@ -73,6 +84,8 @@ function Dashboard(){
 
 
 
+
+
             <div
 
             style={{
@@ -80,6 +93,7 @@ function Dashboard(){
                 display:"grid",
 
                 gridTemplateColumns:
+
                 "repeat(3,1fr)",
 
                 gap:"20px"
@@ -90,37 +104,13 @@ function Dashboard(){
 
 
 
-                <Card
-
-                title="Study Sessions"
-
-                value={
-                    summary.total_sessions
-                }
-
-                />
-
-
-
-                <Card
-
-                title="Study Time"
-
-                value={
-                    summary.formatted_time
-                }
-
-                />
-
 
 
                 <Card
 
                 title="Subjects"
 
-                value={
-                    summary.subjects
-                }
+                value={summary.subjects}
 
                 />
 
@@ -130,9 +120,7 @@ function Dashboard(){
 
                 title="Topics"
 
-                value={
-                    summary.topics
-                }
+                value={summary.topics}
 
                 />
 
@@ -142,11 +130,60 @@ function Dashboard(){
 
                 title="Sub Topics"
 
-                value={
-                    summary.sub_topics
-                }
+                value={summary.sub_topics}
 
                 />
+
+
+
+                <Card
+
+                title="Total Tasks"
+
+                value={summary.total_tasks}
+
+                />
+
+
+
+                <Card
+
+                title="Completed Tasks"
+
+                value={summary.completed_tasks}
+
+                />
+
+
+
+                <Card
+
+                title="Pending Tasks"
+
+                value={summary.pending_tasks}
+
+                />
+
+
+
+                <Card
+
+                title="Study Sessions"
+
+                value={summary.total_sessions}
+
+                />
+
+
+
+                <Card
+
+                title="Study Time"
+
+                value={`${summary.total_minutes} minutes`}
+
+                />
+
 
 
             </div>
@@ -157,13 +194,22 @@ function Dashboard(){
 
     );
 
+
 }
 
 
 
 
 
-function Card({title,value}){
+
+
+function Card({
+
+    title,
+
+    value
+
+}){
 
 
     return (
@@ -172,12 +218,17 @@ function Card({title,value}){
 
 
             <h3>
+
                 {title}
+
             </h3>
 
 
+
             <h1>
+
                 {value}
+
             </h1>
 
 
@@ -187,6 +238,7 @@ function Card({title,value}){
 
 
 }
+
 
 
 

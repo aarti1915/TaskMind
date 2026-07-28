@@ -2,6 +2,7 @@ from fastapi import FastAPI
 
 from app.routes import auth, users, subjects, topics, sub_topics
 from app.routes import study_sessions, dashboard, analytics
+from app.routes import tasks
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -26,6 +27,7 @@ app.include_router(sub_topics.router)
 app.include_router(study_sessions.router)
 app.include_router(dashboard.router)
 app.include_router(analytics.router)
+app.include_router(tasks.router)
 
 
 @app.get("/")
