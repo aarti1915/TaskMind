@@ -1,10 +1,45 @@
 import { useEffect, useState } from "react";
 
-import api from "../api/axios";
+
+import {
+
+    getDashboardSummary,
+
+    getDailyAnalytics,
+
+    getSubjectProgress,
+
+    getStudyStreak
+
+} from "../api/dashboard";
+
+
+
+import DailyStudyChart 
+from "../components/charts/DailyStudyChart";
+
+
+import SubjectDistributionChart 
+from "../components/charts/SubjectDistributionChart";
+
+
+import StreakCard 
+from "../components/StreakCard";
+
+
+import StatCard 
+from "../components/StatCard";
+
+
+import DashboardMessage 
+from "../components/DashboardMessage";
+
+
 
 
 
 function Dashboard(){
+
 
 
     const [summary,setSummary] = useState({
@@ -31,10 +66,46 @@ function Dashboard(){
 
 
 
+    const [dailyData,setDailyData] = useState([]);
+
+
+
+    const [subjectData,setSubjectData] = useState([]);
+
+
+
+    const [streak,setStreak] = useState({
+
+        current_streak:0,
+
+        longest_streak:0,
+
+        last_studied:null
+
+    });
+
+
+
+
+
+    const [loading,setLoading] = useState(true);
+
+
+
+    const [error,setError] = useState("");
+
+
+
+
+
+
+
+
+
     useEffect(()=>{
 
 
-        loadDashboard();
+        loadDashboardData();
 
 
     },[]);
@@ -44,14 +115,82 @@ function Dashboard(){
 
 
 
+
+
+
+    const loadDashboardData = async()=>{
+
+
+        try{
+
+
+            setLoading(true);
+
+
+            setError("");
+
+
+
+            await Promise.all([
+
+                loadDashboard(),
+
+                loadDailyAnalytics(),
+
+                loadSubjectProgress(),
+
+                loadStreak()
+
+            ]);
+
+
+
+        }
+
+
+        catch(error){
+
+
+            console.log(error);
+
+
+
+            setError(
+
+                "Unable to load dashboard"
+
+            );
+
+
+        }
+
+
+        finally{
+
+
+            setLoading(false);
+
+
+        }
+
+
+    };
+
+
+
+
+
+
+
+
+
     const loadDashboard = async()=>{
 
 
-        const response = await api.get(
+        const response =
 
-            "/dashboard/summary"
+        await getDashboardSummary();
 
-        );
 
 
         setSummary(
@@ -69,32 +208,23 @@ function Dashboard(){
 
 
 
-    const formatStudyTime=(minutes)=>{
 
 
-        const hours = Math.floor(
+    const loadDailyAnalytics = async()=>{
 
-            minutes / 60
+
+        const response =
+
+        await getDailyAnalytics();
+
+
+
+        setDailyData(
+
+            response.data
 
         );
 
-
-        const remainingMinutes =
-
-        minutes % 60;
-
-
-
-
-        if(hours === 0){
-
-            return `${remainingMinutes} minutes`;
-
-        }
-
-
-
-        return `${hours} hr ${remainingMinutes} min`;
 
     };
 
@@ -105,9 +235,155 @@ function Dashboard(){
 
 
 
-    return (
+
+    const loadSubjectProgress = async()=>{
+
+
+        const response =
+
+        await getSubjectProgress();
+
+
+
+        setSubjectData(
+
+            response.data
+
+        );
+
+
+    };
+
+
+
+
+
+
+
+
+
+    const loadStreak = async()=>{
+
+
+        const response =
+
+        await getStudyStreak();
+
+
+
+        setStreak(
+
+            response.data
+
+        );
+
+
+    };
+
+
+
+
+
+
+
+
+
+    const formatStudyTime=(minutes)=>{
+
+
+        const hours =
+
+        Math.floor(
+
+            minutes / 60
+
+        );
+
+
+
+        const mins =
+
+        minutes % 60;
+
+
+
+
+        if(hours===0){
+
+
+            return `${mins} minutes`;
+
+
+        }
+
+
+
+
+        return `${hours} hr ${mins} min`;
+
+    };
+
+
+
+
+
+
+
+
+
+    if(loading){
+
+
+        return(
+
+            <DashboardMessage
+
+            message="Loading dashboard..."
+
+            />
+
+        );
+
+
+    }
+
+
+
+
+
+
+
+
+
+    if(error){
+
+
+        return(
+
+            <DashboardMessage
+
+            message={error}
+
+            />
+
+        );
+
+
+    }
+
+
+
+
+
+
+
+
+
+    return(
+
 
         <div>
+
 
 
             <h1>
@@ -129,7 +405,7 @@ function Dashboard(){
 
                 gridTemplateColumns:
 
-                "repeat(3,1fr)",
+                "repeat(auto-fit,minmax(220px,1fr))",
 
                 gap:"20px"
 
@@ -139,7 +415,8 @@ function Dashboard(){
 
 
 
-                <Card
+
+                <StatCard
 
                 title="Subjects"
 
@@ -150,7 +427,7 @@ function Dashboard(){
 
 
 
-                <Card
+                <StatCard
 
                 title="Topics"
 
@@ -161,8 +438,7 @@ function Dashboard(){
 
 
 
-
-                <Card
+                <StatCard
 
                 title="Sub Topics"
 
@@ -173,8 +449,7 @@ function Dashboard(){
 
 
 
-
-                <Card
+                <StatCard
 
                 title="Total Tasks"
 
@@ -185,8 +460,7 @@ function Dashboard(){
 
 
 
-
-                <Card
+                <StatCard
 
                 title="Completed Tasks"
 
@@ -197,8 +471,7 @@ function Dashboard(){
 
 
 
-
-                <Card
+                <StatCard
 
                 title="Pending Tasks"
 
@@ -209,8 +482,7 @@ function Dashboard(){
 
 
 
-
-                <Card
+                <StatCard
 
                 title="Study Sessions"
 
@@ -221,20 +493,21 @@ function Dashboard(){
 
 
 
+                <StatCard
 
-                <Card
+                title="Study Time"
 
-                title="Total Study Time"
+                value={
 
-                value={formatStudyTime(
+                    formatStudyTime(
 
-                    summary.total_minutes
+                        summary.total_minutes
 
-                )}
+                    )
+
+                }
 
                 />
-
-
 
 
 
@@ -243,56 +516,91 @@ function Dashboard(){
 
 
 
+
+
+
+
+
+            {
+
+            dailyData.length > 0 ?
+
+
+            <DailyStudyChart
+
+                data={dailyData}
+
+            />
+
+
+            :
+
+            <DashboardMessage
+
+            message="No study sessions available yet"
+
+            />
+
+
+            }
+
+
+
+
+
+
+
+
+
+            {
+
+            subjectData.length > 0 ?
+
+
+            <SubjectDistributionChart
+
+                data={subjectData}
+
+            />
+
+
+            :
+
+            <DashboardMessage
+
+            message="No subject study data available yet"
+
+            />
+
+
+            }
+
+
+
+
+
+
+
+
+
+            <StreakCard
+
+                data={streak}
+
+            />
+
+
+
+
+
         </div>
+
 
     );
 
 
 }
 
-
-
-
-
-
-
-
-function Card({
-
-    title,
-
-    value
-
-}){
-
-
-    return (
-
-        <div className="card">
-
-
-            <h3>
-
-                {title}
-
-            </h3>
-
-
-
-            <h1>
-
-                {value}
-
-            </h1>
-
-
-
-        </div>
-
-    );
-
-
-}
 
 
 
