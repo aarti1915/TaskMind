@@ -58,9 +58,7 @@ function Subjects(){
 
 
 
-            setSubjects(
-                response.data
-            );
+            setSubjects(response || []);
 
 
         }
@@ -71,6 +69,9 @@ function Subjects(){
             console.log(
                 error.response?.data
             );
+
+
+            setSubjects([]);
 
 
         }

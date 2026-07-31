@@ -29,14 +29,30 @@ function StudySessions(){
 
 
 
+
+
     const loadSubjects=async()=>{
 
-        const res =
-        await api.get("/subjects");
+        try{
 
-        setSubjects(res.data);
+            const res = await api.get("/subjects");
+
+            setSubjects(
+                res.data?.data || []
+            );
+
+        }
+        catch(error){
+
+            console.log(error);
+
+            setSubjects([]);
+
+        }
 
     };
+
+
 
 
 
@@ -47,17 +63,36 @@ function StudySessions(){
         setTopicId("");
         setSubTopicId("");
 
-        const res =
-        await api.get(
-            `/topics/subject/${id}`
-        );
+
+        try{
 
 
-        setTopics(res.data);
+            const res = await api.get(
+                `/topics/subject/${id}`
+            );
 
-        setSubTopics([]);
+
+            setTopics(
+                res.data?.data || []
+            );
+
+
+            setSubTopics([]);
+
+
+        }
+        catch(error){
+
+            console.log(error);
+
+            setTopics([]);
+
+        }
 
     };
+
+
+
 
 
 
@@ -68,31 +103,71 @@ function StudySessions(){
         setSubTopicId("");
 
 
-        const res =
-        await api.get(
-            `/sub-topics/topic/${id}`
-        );
+        try{
 
 
-        setSubTopics(res.data);
+            const res = await api.get(
+                `/sub-topics/topic/${id}`
+            );
 
+
+            setSubTopics(
+                res.data?.data || []
+            );
+
+
+        }
+        catch(error){
+
+            console.log(error);
+
+            setSubTopics([]);
+
+        }
 
     };
+
+
+
 
 
 
 
     const loadSessions=async()=>{
 
-        const res =
-        await api.get(
-            "/study-sessions"
-        );
+
+        try{
 
 
-        setSessions(res.data);
+            const res = await api.get(
+                "/study-sessions"
+            );
+
+
+            // study_sessions API still returns raw array
+
+            setSessions(
+                res.data || []
+            );
+
+
+        }
+        catch(error){
+
+
+            console.log(error);
+
+            setSessions([]);
+
+
+        }
+
 
     };
+
+
+
+
 
 
 
@@ -100,16 +175,36 @@ function StudySessions(){
     const loadActiveSession=async()=>{
 
 
-        const res =
-        await api.get(
-            "/study-sessions/active"
-        );
+        try{
 
 
-        setActiveSession(res.data);
+            const res = await api.get(
+                "/study-sessions/active"
+            );
+
+
+            // study_sessions API still returns raw object
+
+            setActiveSession(
+                res.data || null
+            );
+
+
+        }
+        catch(error){
+
+
+            console.log(error);
+
+            setActiveSession(null);
+
+
+        }
 
 
     };
+
+
 
 
 
@@ -121,36 +216,45 @@ function StudySessions(){
         if(!activeSession){
 
             setTimer(0);
+
             return;
 
         }
 
 
 
+
         const start =
+
         new Date(
             activeSession.start_time
         ).getTime();
 
 
 
+
+
         const update=()=>{
 
 
-            const now =
-            Date.now();
+            const now = Date.now();
 
 
 
             const diff =
+
             Math.floor(
+
                 (now-start)/1000
+
             );
 
 
 
             setTimer(
+
                 diff > 0 ? diff : 0
+
             );
 
 
@@ -158,14 +262,24 @@ function StudySessions(){
 
 
 
+
+
         update();
 
 
+
         const interval =
+
         setInterval(
+
             update,
+
             1000
+
         );
+
+
+
 
 
         return ()=>clearInterval(interval);
@@ -179,32 +293,55 @@ function StudySessions(){
 
 
 
+
+
+
     const startSession=async()=>{
 
 
-        await api.post(
-
-            "/study-sessions/start",
-
-            {
-
-                subject_id:Number(subjectId),
-
-                topic_id:Number(topicId),
-
-                sub_topic_id:Number(subTopicId)
-
-            }
-
-        );
+        try{
 
 
+            await api.post(
 
-        loadActiveSession();
-        loadSessions();
+                "/study-sessions/start",
+
+                {
+
+                    subject_id:Number(subjectId),
+
+                    topic_id:Number(topicId),
+
+                    sub_topic_id:Number(subTopicId)
+
+                }
+
+            );
+
+
+
+            await loadActiveSession();
+
+            await loadSessions();
+
+
+
+        }
+        catch(error){
+
+
+            console.log(
+
+                error.response?.data
+
+            );
+
+
+        }
 
 
     };
+
 
 
 
@@ -215,22 +352,37 @@ function StudySessions(){
     const endSession=async()=>{
 
 
-        await api.patch(
-
-            `/study-sessions/${activeSession.session_id}/end`
-
-        );
+        try{
 
 
-        setActiveSession(null);
+            await api.patch(
 
-        setTimer(0);
+                `/study-sessions/${activeSession.session_id}/end`
+
+            );
 
 
-        loadSessions();
+
+            setActiveSession(null);
+
+            setTimer(0);
+
+
+
+            await loadSessions();
+
+
+        }
+        catch(error){
+
+            console.log(error);
+
+        }
 
 
     };
+
+
 
 
 
@@ -240,14 +392,26 @@ function StudySessions(){
     const deleteSession=async(id)=>{
 
 
-        await api.delete(
-
-            `/study-sessions/${id}`
-
-        );
+        try{
 
 
-        loadSessions();
+            await api.delete(
+
+                `/study-sessions/${id}`
+
+            );
+
+
+
+            await loadSessions();
+
+
+        }
+        catch(error){
+
+            console.log(error);
+
+        }
 
 
     };
@@ -256,18 +420,17 @@ function StudySessions(){
 
 
 
-    const hours =
-    Math.floor(timer/3600);
+
+    const hours = Math.floor(timer/3600);
 
 
-    const minutes =
-    Math.floor(
+    const minutes = Math.floor(
         (timer%3600)/60
     );
 
 
-    const seconds =
-    timer%60;
+    const seconds = timer%60;
+
 
 
 
@@ -285,10 +448,11 @@ Study Sessions
 
 
 {
+
 activeSession ?
 
-
 <div>
+
 
 <h2>
 Session Running
@@ -317,6 +481,7 @@ End Session
 :
 
 <div>
+
 
 
 <select
@@ -367,6 +532,7 @@ value={subject.subject_id}
 
 
 
+
 <select
 
 value={topicId}
@@ -409,6 +575,7 @@ value={topic.topic_id}
 
 
 </select>
+
 
 
 
@@ -478,8 +645,11 @@ Start Session
 
 
 
+
 <h2>
+
 Session History
+
 </h2>
 
 
@@ -498,10 +668,7 @@ key={session.session_id}
 
 <p>
 
-Duration:
-{" "}
-{session.duration_minutes || 0}
-minutes
+Duration: {session.duration_minutes || 0} minutes
 
 </p>
 

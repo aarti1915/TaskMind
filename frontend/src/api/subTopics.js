@@ -3,18 +3,19 @@ import api from "./axios";
 
 
 
-// Get sub topics by topic
 
-export const getSubTopicsByTopic = (topicId)=>{
+export const getSubTopicsByTopic = async(topicId)=>{
 
 
-    return api.get(
+    const response = await api.get(
 
         `/sub-topics/topic/${topicId}`
 
     );
 
 
+    return response.data.data;
+
 };
 
 
@@ -22,18 +23,19 @@ export const getSubTopicsByTopic = (topicId)=>{
 
 
 
-// Get all sub topics
 
-export const getSubTopics = ()=>{
+export const getSubTopics = async()=>{
 
 
-    return api.get(
+    const response = await api.get(
 
         "/sub-topics"
 
     );
 
 
+    return response.data.data;
+
 };
 
 
@@ -42,12 +44,10 @@ export const getSubTopics = ()=>{
 
 
 
-// Create sub topic
-
-export const createSubTopic = (data)=>{
+export const createSubTopic = async(data)=>{
 
 
-    return api.post(
+    const response = await api.post(
 
         "/sub-topics",
 
@@ -56,6 +56,8 @@ export const createSubTopic = (data)=>{
     );
 
 
+    return response.data.data;
+
 };
 
 
@@ -63,12 +65,11 @@ export const createSubTopic = (data)=>{
 
 
 
-// Update sub topic
 
-export const updateSubTopic = (id,data)=>{
+export const updateSubTopic = async(id,data)=>{
 
 
-    return api.patch(
+    const response = await api.patch(
 
         `/sub-topics/${id}`,
 
@@ -77,6 +78,8 @@ export const updateSubTopic = (id,data)=>{
     );
 
 
+    return response.data.data;
+
 };
 
 
@@ -84,16 +87,17 @@ export const updateSubTopic = (id,data)=>{
 
 
 
-// Delete sub topic
 
-export const deleteSubTopic = (id)=>{
+export const deleteSubTopic = async(id)=>{
 
 
-    return api.delete(
+    const response = await api.delete(
 
         `/sub-topics/${id}`
 
     );
 
+
+    return response.data;
 
 };

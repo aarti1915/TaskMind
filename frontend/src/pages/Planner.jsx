@@ -39,15 +39,25 @@ function Planner(){
     },[]);
 
 
-    const loadSubjects = async()=>{
+    const loadSubjects = async () => {
 
-        const response = await api.get(
-            "/subjects"
-        );
+        try {
 
-        setSubjects(
-            response.data
-        );
+            const response = await api.get("/subjects");
+
+
+            setSubjects(
+                response.data.data || []
+            );
+
+
+        } catch(error) {
+
+            console.log(error);
+
+            setSubjects([]);
+
+        }
 
     };
 
@@ -58,7 +68,7 @@ function Planner(){
         );
 
         setTasks(
-            response.data
+            response.data.data || []
         );
 
     };
@@ -66,21 +76,49 @@ function Planner(){
 
     const loadPlannerViews = async()=>{
 
-        const today = await api.get(
-            "/tasks/today"
-        );
+        try{
 
-        const upcoming = await api.get(
-            "/tasks/upcoming"
-        );
 
-        setTodayTasks(
-            today.data
-        );
+            const today = await api.get(
+                "/tasks/today"
+            );
 
-        setUpcomingTasks(
-            upcoming.data
-        );
+
+            const upcoming = await api.get(
+                "/tasks/upcoming"
+            );
+
+
+
+            setTodayTasks(
+
+                today.data?.data || []
+
+            );
+
+
+
+            setUpcomingTasks(
+
+                upcoming.data?.data || []
+
+            );
+
+
+        }
+
+        catch(error){
+
+
+            console.log(error);
+
+
+            setTodayTasks([]);
+
+            setUpcomingTasks([]);
+
+
+        }
 
     };
 
@@ -107,7 +145,7 @@ function Planner(){
             );
 
             setTopics(
-                response.data
+                response.data.data || []
             );
 
         }
@@ -134,7 +172,7 @@ function Planner(){
             );
 
             setSubTopics(
-                response.data
+                response.data.data || []
             );
 
         }

@@ -1,4 +1,18 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+
+from fastapi.exceptions import RequestValidationError
+
+
+from app.core.exceptions import (
+
+    http_exception_handler,
+
+    validation_exception_handler
+
+)
+
+from app.core.logger import logger
+
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.database.connection import engine
@@ -30,7 +44,27 @@ app = FastAPI(
     title="TaskMind API"
 )
 
+app.add_exception_handler(
 
+    HTTPException,
+
+    http_exception_handler
+
+)
+
+
+
+app.add_exception_handler(
+
+    RequestValidationError,
+
+    validation_exception_handler
+
+)
+
+logger.info(
+    "TaskMind API started"
+)
 
 
 

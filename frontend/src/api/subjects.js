@@ -2,24 +2,41 @@ import api from "./axios";
 
 
 
+
+
 // Get all subjects
 
-export const getSubjects = ()=>{
+export const getSubjects = async()=>{
 
-    return api.get(
+
+    const response =
+
+    await api.get(
+
         "/subjects"
+
     );
+
+
+
+    return response.data.data;
 
 };
 
 
 
 
+
+
+
 // Create subject
 
-export const createSubject = (data)=>{
+export const createSubject = async(data)=>{
 
-    return api.post(
+
+    const response =
+
+    await api.post(
 
         "/subjects",
 
@@ -27,17 +44,26 @@ export const createSubject = (data)=>{
 
     );
 
+
+
+    return response.data.data;
+
 };
+
+
+
 
 
 
 
 // Update subject
 
-export const updateSubject = (id,data)=>{
+export const updateSubject = async(id,data)=>{
 
 
-    return api.patch(
+    const response =
+
+    await api.patch(
 
         `/subjects/${id}`,
 
@@ -46,25 +72,32 @@ export const updateSubject = (id,data)=>{
     );
 
 
+
+    return response.data.data;
+
 };
+
+
+
 
 
 
 
 // Delete subject
 
-export const deleteSubject = (id)=>{
+export const deleteSubject = async(id)=>{
 
 
-    return api.delete(
+    const response =
+
+    await api.delete(
 
         `/subjects/${id}`
 
     );
 
 
+
+    return response.data;
+
 };
-
-
-
-

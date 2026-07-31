@@ -1,38 +1,48 @@
 from fastapi import APIRouter, Depends, HTTPException
+
 from sqlalchemy.orm import Session
+
 
 from app.database.connection import get_db
 
 from app.models.sub_topic import SubTopic
-from app.schemas.sub_topic import (
-    SubTopicCreate,
-    SubTopicResponse
-)
+
+from app.schemas.sub_topic import SubTopicCreate
 
 from app.utils.security import get_current_user
 
+from app.core.response import success_response
+
+
+
+
 
 router = APIRouter(
+
     prefix="/sub-topics",
+
     tags=["Sub Topics"]
+
 )
 
 
 
-# Create Sub Topic
-@router.post(
-    "",
-    response_model=SubTopicResponse
-)
+
+
+
+
+
+@router.post("")
 def create_sub_topic(
 
-    data: SubTopicCreate,
+    data:SubTopicCreate,
 
-    db: Session = Depends(get_db),
+    db:Session = Depends(get_db),
 
     current_user = Depends(get_current_user)
 
 ):
+
 
     sub_topic = SubTopic(
 
@@ -43,6 +53,7 @@ def create_sub_topic(
     )
 
 
+
     db.add(sub_topic)
 
     db.commit()
@@ -50,42 +61,57 @@ def create_sub_topic(
     db.refresh(sub_topic)
 
 
-    return sub_topic
+
+    return success_response(
+
+        data=sub_topic,
+
+        message="Sub topic created successfully"
+
+    )
 
 
 
 
 
-# Get all sub topics
-@router.get(
-    "",
-    response_model=list[SubTopicResponse]
-)
+
+
+
+@router.get("")
 def get_sub_topics(
 
-    db: Session = Depends(get_db),
+    db:Session = Depends(get_db),
 
     current_user = Depends(get_current_user)
 
 ):
 
-    return db.query(SubTopic).all()
+
+    sub_topics = db.query(SubTopic).all()
+
+
+
+    return success_response(
+
+        data=sub_topics,
+
+        message="Sub topics fetched successfully"
+
+    )
 
 
 
 
 
 
-# Get sub topics by topic
-@router.get(
-    "/topic/{topic_id}",
-    response_model=list[SubTopicResponse]
-)
+
+
+@router.get("/topic/{topic_id}")
 def get_sub_topics_by_topic(
 
     topic_id:int,
 
-    db: Session = Depends(get_db),
+    db:Session = Depends(get_db),
 
     current_user = Depends(get_current_user)
 
@@ -99,61 +125,129 @@ def get_sub_topics_by_topic(
     ).all()
 
 
-    return sub_topics
 
-# Update Sub Topic
-@router.patch(
-    "/{sub_topic_id}",
-    response_model=SubTopicResponse
-)
+    return success_response(
+
+        data=sub_topics,
+
+        message="Sub topics fetched successfully"
+
+    )
+
+
+
+
+
+
+
+
+@router.patch("/{sub_topic_id}")
 def update_sub_topic(
-    sub_topic_id: int,
-    data: SubTopicCreate,
-    db: Session = Depends(get_db),
+
+    sub_topic_id:int,
+
+    data:SubTopicCreate,
+
+    db:Session = Depends(get_db),
+
     current_user = Depends(get_current_user)
+
 ):
 
+
     sub_topic = db.query(SubTopic).filter(
+
         SubTopic.sub_topic_id == sub_topic_id
+
     ).first()
 
+
+
     if not sub_topic:
+
+
         raise HTTPException(
+
             status_code=404,
+
             detail="Sub topic not found"
+
         )
+
+
 
     sub_topic.name = data.name
+
     sub_topic.description = data.description
+
     sub_topic.topic_id = data.topic_id
 
+
+
     db.commit()
+
     db.refresh(sub_topic)
 
-    return sub_topic
 
 
-# Delete Sub Topic
+    return success_response(
+
+        data=sub_topic,
+
+        message="Sub topic updated successfully"
+
+    )
+
+
+
+
+
+
+
+
 @router.delete("/{sub_topic_id}")
 def delete_sub_topic(
-    sub_topic_id: int,
-    db: Session = Depends(get_db),
+
+    sub_topic_id:int,
+
+    db:Session = Depends(get_db),
+
     current_user = Depends(get_current_user)
+
 ):
 
+
     sub_topic = db.query(SubTopic).filter(
+
         SubTopic.sub_topic_id == sub_topic_id
+
     ).first()
 
+
+
     if not sub_topic:
+
+
         raise HTTPException(
+
             status_code=404,
+
             detail="Sub topic not found"
+
         )
 
+
+
     db.delete(sub_topic)
+
     db.commit()
 
-    return {
-        "message": "Sub topic deleted successfully"
-    }
+
+
+    return success_response(
+
+        data=None,
+
+        message="Sub topic deleted successfully"
+
+    )

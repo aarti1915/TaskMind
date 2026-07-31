@@ -9,7 +9,9 @@ import { useNavigate } from "react-router-dom";
 
 
 
+
 function Login(){
+
 
 
     const {
@@ -21,7 +23,9 @@ function Login(){
 
 
 
+
     const navigate = useNavigate();
+
 
 
 
@@ -40,6 +44,8 @@ function Login(){
 
 
 
+
+
     const handleChange=(e)=>{
 
 
@@ -50,7 +56,6 @@ function Login(){
             [e.target.name]:
 
             e.target.value
-
 
         });
 
@@ -63,11 +68,12 @@ function Login(){
 
 
 
+
+
     const handleSubmit=async(e)=>{
 
 
         e.preventDefault();
-
 
 
 
@@ -88,9 +94,11 @@ function Login(){
 
 
 
+
             const token =
 
-            response.data.access_token;
+            response.data.data.access_token;
+
 
 
 
@@ -100,17 +108,15 @@ function Login(){
 
 
 
-
-
             navigate("/dashboard");
-
-
 
 
 
         }
 
+
         catch(error){
+
 
 
             console.log(
@@ -120,7 +126,10 @@ function Login(){
             );
 
 
+
             alert(
+
+                error.response?.data?.message ||
 
                 "Invalid email or password"
 
@@ -142,7 +151,6 @@ function Login(){
 
     return (
 
-
         <div
 
         style={{
@@ -158,7 +166,6 @@ function Login(){
         }}
 
         >
-
 
 
 
@@ -211,7 +218,6 @@ function Login(){
 
 
 
-
                 <input
 
                 type="password"
@@ -244,16 +250,11 @@ function Login(){
 
 
 
-
-
             </form>
 
 
 
-
-
         </div>
-
 
     );
 
