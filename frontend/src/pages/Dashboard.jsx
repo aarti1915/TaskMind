@@ -9,7 +9,9 @@ import {
 
     getSubjectProgress,
 
-    getStudyStreak
+    getStudyStreak,
+
+    getWeeklyAnalytics
 
 } from "../api/dashboard";
 
@@ -35,10 +37,17 @@ import DashboardMessage
 from "../components/DashboardMessage";
 
 
+import WeeklyStudyCard 
+from "../components/WeeklyStudyCard";
+
+
+
 
 
 
 function Dashboard(){
+
+
 
 
 
@@ -70,7 +79,9 @@ function Dashboard(){
 
 
 
+
     const [subjectData,setSubjectData] = useState([]);
+
 
 
 
@@ -88,12 +99,16 @@ function Dashboard(){
 
 
 
+    const [weeklyData,setWeeklyData] = useState(null);
+
+
+
+
     const [loading,setLoading] = useState(true);
 
 
 
     const [error,setError] = useState("");
-
 
 
 
@@ -118,6 +133,7 @@ function Dashboard(){
 
 
 
+
     const loadDashboardData = async()=>{
 
 
@@ -133,13 +149,21 @@ function Dashboard(){
 
             await Promise.all([
 
+
                 loadDashboard(),
+
 
                 loadDailyAnalytics(),
 
+
                 loadSubjectProgress(),
 
-                loadStreak()
+
+                loadStreak(),
+
+
+                loadWeeklyAnalytics()
+
 
             ]);
 
@@ -152,7 +176,6 @@ function Dashboard(){
 
 
             console.log(error);
-
 
 
             setError(
@@ -288,6 +311,32 @@ function Dashboard(){
 
 
 
+    const loadWeeklyAnalytics = async()=>{
+
+
+        const response =
+
+        await getWeeklyAnalytics();
+
+
+
+        setWeeklyData(
+
+            response.data
+
+        );
+
+
+    };
+
+
+
+
+
+
+
+
+
     const formatStudyTime=(minutes)=>{
 
 
@@ -319,7 +368,9 @@ function Dashboard(){
 
 
 
+
         return `${hours} hr ${mins} min`;
+
 
     };
 
@@ -336,11 +387,13 @@ function Dashboard(){
 
         return(
 
+
             <DashboardMessage
 
-            message="Loading dashboard..."
+                message="Loading dashboard..."
 
             />
+
 
         );
 
@@ -360,248 +413,257 @@ function Dashboard(){
 
         return(
 
+
             <DashboardMessage
 
-            message={error}
+                message={error}
 
             />
+
 
         );
 
 
     }
 
-
-
-
-
-
-
-
-
     return(
 
+<div>
 
-        <div>
 
 
+<h1>
 
-            <h1>
+Dashboard
 
-                Dashboard
+</h1>
 
-            </h1>
 
 
 
 
 
+<div
 
-            <div
+style={{
 
-            style={{
+display:"grid",
 
-                display:"grid",
+gridTemplateColumns:
 
-                gridTemplateColumns:
+"repeat(auto-fit,minmax(220px,1fr))",
 
-                "repeat(auto-fit,minmax(220px,1fr))",
+gap:"20px"
 
-                gap:"20px"
+}}
 
-            }}
+>
 
-            >
 
 
+<StatCard
 
+title="Subjects"
 
-                <StatCard
+value={summary.subjects}
 
-                title="Subjects"
+/>
 
-                value={summary.subjects}
 
-                />
 
 
+<StatCard
 
+title="Topics"
 
-                <StatCard
+value={summary.topics}
 
-                title="Topics"
+/>
 
-                value={summary.topics}
 
-                />
 
 
+<StatCard
 
+title="Sub Topics"
 
-                <StatCard
+value={summary.sub_topics}
 
-                title="Sub Topics"
+/>
 
-                value={summary.sub_topics}
 
-                />
 
 
+<StatCard
 
+title="Total Tasks"
 
-                <StatCard
+value={summary.total_tasks}
 
-                title="Total Tasks"
+/>
 
-                value={summary.total_tasks}
 
-                />
 
 
+<StatCard
 
+title="Completed Tasks"
 
-                <StatCard
+value={summary.completed_tasks}
 
-                title="Completed Tasks"
+/>
 
-                value={summary.completed_tasks}
 
-                />
 
 
+<StatCard
 
+title="Pending Tasks"
 
-                <StatCard
+value={summary.pending_tasks}
 
-                title="Pending Tasks"
+/>
 
-                value={summary.pending_tasks}
 
-                />
 
 
+<StatCard
 
+title="Study Sessions"
 
-                <StatCard
+value={summary.total_sessions}
 
-                title="Study Sessions"
+/>
 
-                value={summary.total_sessions}
 
-                />
 
 
+<StatCard
 
+title="Study Time"
 
-                <StatCard
+value={
 
-                title="Study Time"
+formatStudyTime(
 
-                value={
+summary.total_minutes
 
-                    formatStudyTime(
+)
 
-                        summary.total_minutes
+}
 
-                    )
+/>
 
-                }
 
-                />
 
+</div>
 
 
-            </div>
 
 
 
 
 
 
+{
 
+weeklyData &&
 
+<WeeklyStudyCard
 
-            {
+data={weeklyData}
 
-            dailyData.length > 0 ?
+/>
 
+}
 
-            <DailyStudyChart
 
-                data={dailyData}
 
-            />
 
 
-            :
 
-            <DashboardMessage
 
-            message="No study sessions available yet"
 
-            />
+{
 
+dailyData.length > 0 ?
 
-            }
 
+<DailyStudyChart
 
+data={dailyData}
 
+/>
 
 
+:
 
 
+<DashboardMessage
 
+message="No study sessions available yet"
 
-            {
-
-            subjectData.length > 0 ?
-
-
-            <SubjectDistributionChart
-
-                data={subjectData}
-
-            />
-
-
-            :
-
-            <DashboardMessage
-
-            message="No subject study data available yet"
-
-            />
-
-
-            }
-
-
-
-
-
-
-
-
-
-            <StreakCard
-
-                data={streak}
-
-            />
-
-
-
-
-
-        </div>
-
-
-    );
+/>
 
 
 }
 
 
+
+
+
+
+
+
+
+{
+
+subjectData.length > 0 ?
+
+
+<SubjectDistributionChart
+
+data={subjectData}
+
+/>
+
+
+:
+
+
+<DashboardMessage
+
+message="No subject study data available yet"
+
+/>
+
+
+}
+
+
+
+
+
+
+
+
+<StreakCard
+
+data={streak}
+
+/>
+
+
+
+
+
+</div>
+
+
+);
+
+
+}
 
 
 

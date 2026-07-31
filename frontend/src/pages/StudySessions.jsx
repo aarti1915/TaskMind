@@ -4,26 +4,44 @@ import api from "../api/axios";
 
 function StudySessions(){
 
-    const [subjects,setSubjects]=useState([]);
-    const [topics,setTopics]=useState([]);
-    const [subTopics,setSubTopics]=useState([]);
 
-    const [subjectId,setSubjectId]=useState("");
-    const [topicId,setTopicId]=useState("");
-    const [subTopicId,setSubTopicId]=useState("");
+    const [subjects,setSubjects] = useState([]);
 
-    const [activeSession,setActiveSession]=useState(null);
-    const [sessions,setSessions]=useState([]);
+    const [topics,setTopics] = useState([]);
 
-    const [timer,setTimer]=useState(0);
+    const [subTopics,setSubTopics] = useState([]);
+
+
+
+    const [subjectId,setSubjectId] = useState("");
+
+    const [topicId,setTopicId] = useState("");
+
+    const [subTopicId,setSubTopicId] = useState("");
+
+
+
+    const [activeSession,setActiveSession] = useState(null);
+
+    const [sessions,setSessions] = useState([]);
+
+
+
+    const [timer,setTimer] = useState(0);
+
+
 
 
 
     useEffect(()=>{
 
+
         loadSubjects();
+
         loadSessions();
+
         loadActiveSession();
+
 
     },[]);
 
@@ -31,24 +49,39 @@ function StudySessions(){
 
 
 
-    const loadSubjects=async()=>{
+
+
+    const loadSubjects = async()=>{
+
 
         try{
 
-            const res = await api.get("/subjects");
 
-            setSubjects(
-                res.data?.data || []
+            const res = await api.get(
+                "/subjects"
             );
 
+
+            setSubjects(
+
+                res.data?.data || []
+
+            );
+
+
         }
+
         catch(error){
 
+
             console.log(error);
+
 
             setSubjects([]);
 
+
         }
+
 
     };
 
@@ -56,38 +89,54 @@ function StudySessions(){
 
 
 
-    const loadTopics=async(id)=>{
+
+
+    const loadTopics = async(id)=>{
 
 
         setSubjectId(id);
+
         setTopicId("");
+
         setSubTopicId("");
+
 
 
         try{
 
 
             const res = await api.get(
+
                 `/topics/subject/${id}`
+
             );
+
 
 
             setTopics(
+
                 res.data?.data || []
+
             );
 
 
             setSubTopics([]);
 
 
+
         }
+
         catch(error){
 
+
             console.log(error);
+
 
             setTopics([]);
 
+
         }
+
 
     };
 
@@ -96,34 +145,48 @@ function StudySessions(){
 
 
 
-    const loadSubTopics=async(id)=>{
+
+    const loadSubTopics = async(id)=>{
 
 
         setTopicId(id);
+
         setSubTopicId("");
+
 
 
         try{
 
 
             const res = await api.get(
+
                 `/sub-topics/topic/${id}`
+
             );
+
 
 
             setSubTopics(
+
                 res.data?.data || []
+
             );
 
 
+
         }
+
         catch(error){
+
 
             console.log(error);
 
+
             setSubTopics([]);
 
+
         }
+
 
     };
 
@@ -133,33 +196,41 @@ function StudySessions(){
 
 
 
-    const loadSessions=async()=>{
+
+    const loadSessions = async()=>{
 
 
         try{
 
 
             const res = await api.get(
+
                 "/study-sessions"
+
             );
 
 
-            // study_sessions API still returns raw array
 
             setSessions(
+
                 res.data || []
+
             );
+
 
 
         }
+
         catch(error){
 
 
             console.log(error);
+
 
             setSessions([]);
 
 
+
         }
 
 
@@ -172,37 +243,45 @@ function StudySessions(){
 
 
 
-    const loadActiveSession=async()=>{
+    const loadActiveSession = async()=>{
 
 
         try{
 
 
             const res = await api.get(
+
                 "/study-sessions/active"
+
             );
 
 
-            // study_sessions API still returns raw object
 
             setActiveSession(
+
                 res.data || null
+
             );
+
 
 
         }
+
         catch(error){
 
 
             console.log(error);
 
+
             setActiveSession(null);
+
 
 
         }
 
 
     };
+
 
 
 
@@ -215,37 +294,35 @@ function StudySessions(){
 
         if(!activeSession){
 
+
             setTimer(0);
 
             return;
+
 
         }
 
 
 
 
-        const start =
+        const start = new Date(
 
-        new Date(
             activeSession.start_time
+
         ).getTime();
 
 
 
 
-
-        const update=()=>{
+        const update = ()=>{
 
 
             const now = Date.now();
 
 
+            const diff = Math.floor(
 
-            const diff =
-
-            Math.floor(
-
-                (now-start)/1000
+                (now - start) / 1000
 
             );
 
@@ -263,22 +340,18 @@ function StudySessions(){
 
 
 
-
         update();
 
 
 
-        const interval =
 
-        setInterval(
+        const interval = setInterval(
 
             update,
 
             1000
 
         );
-
-
 
 
 
@@ -296,7 +369,7 @@ function StudySessions(){
 
 
 
-    const startSession=async()=>{
+    const startSession = async()=>{
 
 
         try{
@@ -308,13 +381,18 @@ function StudySessions(){
 
                 {
 
+
                     subject_id:Number(subjectId),
+
 
                     topic_id:Number(topicId),
 
+
                     sub_topic_id:Number(subTopicId)
 
+
                 }
+
 
             );
 
@@ -322,11 +400,13 @@ function StudySessions(){
 
             await loadActiveSession();
 
+
             await loadSessions();
 
 
 
         }
+
         catch(error){
 
 
@@ -349,7 +429,7 @@ function StudySessions(){
 
 
 
-    const endSession=async()=>{
+    const endSession = async()=>{
 
 
         try{
@@ -365,6 +445,7 @@ function StudySessions(){
 
             setActiveSession(null);
 
+
             setTimer(0);
 
 
@@ -372,10 +453,15 @@ function StudySessions(){
             await loadSessions();
 
 
+
         }
+
         catch(error){
 
+
             console.log(error);
+
+
 
         }
 
@@ -389,7 +475,7 @@ function StudySessions(){
 
 
 
-    const deleteSession=async(id)=>{
+    const deleteSession = async(id)=>{
 
 
         try{
@@ -406,10 +492,15 @@ function StudySessions(){
             await loadSessions();
 
 
+
         }
+
         catch(error){
 
+
             console.log(error);
+
+
 
         }
 
@@ -421,22 +512,26 @@ function StudySessions(){
 
 
 
-    const hours = Math.floor(timer/3600);
 
+    const hours = Math.floor(
 
-    const minutes = Math.floor(
-        (timer%3600)/60
+        timer / 3600
+
     );
 
 
-    const seconds = timer%60;
+
+    const minutes = Math.floor(
+
+        (timer % 3600) / 60
+
+    );
 
 
 
+    const seconds = timer % 60;
 
-
-
-return(
+    return(
 
 <div>
 
@@ -447,8 +542,8 @@ Study Sessions
 
 
 
-{
 
+{
 activeSession ?
 
 <div>
@@ -477,7 +572,6 @@ End Session
 </div>
 
 
-
 :
 
 <div>
@@ -493,7 +587,6 @@ loadTopics(e.target.value)
 }
 
 >
-
 
 <option value="">
 
@@ -543,7 +636,6 @@ loadSubTopics(e.target.value)
 
 >
 
-
 <option value="">
 
 Select Topic
@@ -592,7 +684,6 @@ setSubTopicId(e.target.value)
 
 >
 
-
 <option value="">
 
 Select Sub Topic
@@ -629,7 +720,11 @@ value={subTopic.sub_topic_id}
 
 
 
-<button onClick={startSession}>
+<button
+
+onClick={startSession}
+
+>
 
 Start Session
 
@@ -638,9 +733,7 @@ Start Session
 
 </div>
 
-
 }
-
 
 
 
@@ -654,6 +747,7 @@ Session History
 
 
 
+
 {
 
 sessions.map(session=>(
@@ -663,21 +757,103 @@ sessions.map(session=>(
 
 key={session.session_id}
 
+className="card"
+
 >
+
+
+<h3>
+
+{session.subject_name}
+
+</h3>
+
 
 
 <p>
 
-Duration: {session.duration_minutes || 0} minutes
+Topic:
+
+{" "}
+
+{session.topic_name}
 
 </p>
+
+
+
+<p>
+
+Sub Topic:
+
+{" "}
+
+{session.sub_topic_name}
+
+</p>
+
+
+
+<p>
+
+Duration:
+
+{" "}
+
+{session.duration_minutes || 0}
+
+minutes
+
+</p>
+
+
+
+<p>
+
+Start:
+
+{" "}
+
+{new Date(
+
+session.start_time
+
+).toLocaleString()}
+
+</p>
+
+
+
+
+{
+
+session.end_time &&
+
+<p>
+
+End:
+
+{" "}
+
+{new Date(
+
+session.end_time
+
+).toLocaleString()}
+
+</p>
+
+}
+
 
 
 
 <button
 
 onClick={()=>
+
 deleteSession(session.session_id)
+
 }
 
 >
@@ -693,12 +869,13 @@ Delete
 
 ))
 
+
 }
 
 
 
-</div>
 
+</div>
 
 );
 

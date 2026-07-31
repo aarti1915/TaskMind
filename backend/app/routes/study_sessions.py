@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from datetime import datetime, timezone
+from datetime import datetime
 
 from app.database.connection import get_db
 
 from app.models.study_session import StudySession
+from app.models import Subject, Topic, SubTopic
 
 from app.schemas.study_session import (
     StudySessionCreate,
@@ -14,9 +15,7 @@ from app.schemas.study_session import (
 from app.utils.security import get_current_user
 
 
-
 router = APIRouter()
-
 
 
 
@@ -41,9 +40,6 @@ def start_session(
 ):
 
 
-    from app.models import Subject, Topic, SubTopic
-
-
     subject = db.query(Subject).filter(
 
         Subject.subject_id == data.subject_id,
@@ -53,11 +49,15 @@ def start_session(
     ).first()
 
 
+
     if not subject:
 
         raise HTTPException(
+
             status_code=404,
+
             detail="Subject not found"
+
         )
 
 
@@ -75,8 +75,11 @@ def start_session(
     if not topic:
 
         raise HTTPException(
+
             status_code=404,
+
             detail="Topic does not belong to subject"
+
         )
 
 
@@ -94,8 +97,11 @@ def start_session(
     if not sub_topic:
 
         raise HTTPException(
+
             status_code=404,
+
             detail="Sub-topic does not belong to topic"
+
         )
 
 
@@ -112,17 +118,22 @@ def start_session(
 
     if old_session:
 
+
         old_session.end_time = datetime.now()
+
 
         old_session.duration_minutes = int(
 
             (
+
                 old_session.end_time -
+
                 old_session.start_time
 
-            ).total_seconds()/60
+            ).total_seconds() / 60
 
         )
+
 
 
 
@@ -149,7 +160,10 @@ def start_session(
     db.refresh(session)
 
 
+
     return session
+
+
 
 
 
@@ -174,7 +188,6 @@ def active_session(
         StudySession.end_time == None
 
     ).first()
-
 
 
 
@@ -230,7 +243,7 @@ def end_session(
 
             session.start_time
 
-        ).total_seconds()/60
+        ).total_seconds() / 60
 
     )
 
@@ -249,10 +262,8 @@ def end_session(
 
 
 
-
 @router.get(
-    "/study-sessions",
-    response_model=list[StudySessionResponse]
+    "/study-sessions"
 )
 def get_sessions(
 
@@ -263,12 +274,92 @@ def get_sessions(
 ):
 
 
-    return db.query(StudySession).filter(
+    sessions = (
 
-        StudySession.user_id == current_user.user_id
+        db.query(
 
-    ).all()
+            StudySession,
 
+            Subject.name.label("subject_name"),
+
+            Topic.name.label("topic_name"),
+
+            SubTopic.name.label("sub_topic_name")
+
+        )
+
+        .join(
+
+            Subject,
+
+            StudySession.subject_id == Subject.subject_id
+
+        )
+
+        .join(
+
+            Topic,
+
+            StudySession.topic_id == Topic.topic_id
+
+        )
+
+        .join(
+
+            SubTopic,
+
+            StudySession.sub_topic_id == SubTopic.sub_topic_id
+
+        )
+
+        .filter(
+
+            StudySession.user_id == current_user.user_id
+
+        )
+
+        .all()
+
+    )
+
+
+
+    result = []
+
+
+
+    for session, subject_name, topic_name, sub_topic_name in sessions:
+
+
+        result.append({
+
+            "session_id": session.session_id,
+
+            "subject_id": session.subject_id,
+
+            "topic_id": session.topic_id,
+
+            "sub_topic_id": session.sub_topic_id,
+
+            "subject_name": subject_name,
+
+            "topic_name": topic_name,
+
+            "sub_topic_name": sub_topic_name,
+
+            "start_time": session.start_time,
+
+            "end_time": session.end_time,
+
+            "duration_minutes": session.duration_minutes,
+
+            "created_at": session.created_at
+
+        })
+
+
+
+    return result
 
 
 
