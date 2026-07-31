@@ -68,16 +68,3 @@ export const deleteSubject = (id)=>{
 
 
 
-// Get topics of subject
-
-export const getSubjectTopics = (id)=>{
-
-
-    return api.get(
-
-        `/subjects/${id}/topics`
-
-    );
-
-
-};

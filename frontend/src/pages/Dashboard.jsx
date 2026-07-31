@@ -31,8 +31,6 @@ function Dashboard(){
 
 
 
-
-
     useEffect(()=>{
 
 
@@ -40,8 +38,6 @@ function Dashboard(){
 
 
     },[]);
-
-
 
 
 
@@ -73,14 +69,53 @@ function Dashboard(){
 
 
 
+    const formatStudyTime=(minutes)=>{
+
+
+        const hours = Math.floor(
+
+            minutes / 60
+
+        );
+
+
+        const remainingMinutes =
+
+        minutes % 60;
+
+
+
+
+        if(hours === 0){
+
+            return `${remainingMinutes} minutes`;
+
+        }
+
+
+
+        return `${hours} hr ${remainingMinutes} min`;
+
+    };
+
+
+
+
+
+
+
+
     return (
 
         <div>
 
 
             <h1>
+
                 Dashboard
+
             </h1>
+
 
 
 
@@ -104,8 +139,6 @@ function Dashboard(){
 
 
 
-
-
                 <Card
 
                 title="Subjects"
@@ -113,6 +146,7 @@ function Dashboard(){
                 value={summary.subjects}
 
                 />
+
 
 
 
@@ -126,6 +160,8 @@ function Dashboard(){
 
 
 
+
+
                 <Card
 
                 title="Sub Topics"
@@ -133,6 +169,8 @@ function Dashboard(){
                 value={summary.sub_topics}
 
                 />
+
+
 
 
 
@@ -146,6 +184,8 @@ function Dashboard(){
 
 
 
+
+
                 <Card
 
                 title="Completed Tasks"
@@ -153,6 +193,8 @@ function Dashboard(){
                 value={summary.completed_tasks}
 
                 />
+
+
 
 
 
@@ -166,6 +208,8 @@ function Dashboard(){
 
 
 
+
+
                 <Card
 
                 title="Study Sessions"
@@ -176,17 +220,26 @@ function Dashboard(){
 
 
 
+
+
                 <Card
 
-                title="Study Time"
+                title="Total Study Time"
 
-                value={`${summary.total_minutes} minutes`}
+                value={formatStudyTime(
+
+                    summary.total_minutes
+
+                )}
 
                 />
 
 
 
+
+
             </div>
+
 
 
 
@@ -196,6 +249,7 @@ function Dashboard(){
 
 
 }
+
 
 
 
@@ -232,13 +286,13 @@ function Card({
             </h1>
 
 
+
         </div>
 
     );
 
 
 }
-
 
 
 

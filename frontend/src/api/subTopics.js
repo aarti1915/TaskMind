@@ -3,7 +3,6 @@ import api from "./axios";
 
 
 
-
 // Get sub topics by topic
 
 export const getSubTopicsByTopic = (topicId)=>{
@@ -11,7 +10,7 @@ export const getSubTopicsByTopic = (topicId)=>{
 
     return api.get(
 
-        `/topics/${topicId}/sub-topics`
+        `/sub-topics/topic/${topicId}`
 
     );
 

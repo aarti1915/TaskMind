@@ -103,7 +103,7 @@ function Planner(){
         if(subjectId){
 
             const response = await api.get(
-                `/subjects/${subjectId}/topics`
+                `/topics/subject/${subjectId}`
             );
 
             setTopics(
@@ -130,7 +130,7 @@ function Planner(){
         if(topicId){
 
             const response = await api.get(
-                `/topics/${topicId}/sub-topics`
+                `/sub-topics/topic/${topicId}`
             );
 
             setSubTopics(

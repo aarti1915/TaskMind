@@ -5,6 +5,7 @@ import {
 } from "react-router-dom";
 
 import Login from "./pages/Login";
+import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Subjects from "./pages/Subjects";
 import StudySessions from "./pages/StudySessions";
@@ -23,6 +24,11 @@ function App(){
                 <Route
                 path="/login"
                 element={<Login/>}
+                />
+
+                <Route
+                path="/register"
+                element={<Register/>}
                 />
 
                 <Route

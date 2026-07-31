@@ -67,7 +67,11 @@ def create_task(
 
 
     sub_topic = db.query(SubTopic).filter(
-        SubTopic.sub_topic_id == task_data.sub_topic_id
+
+        SubTopic.sub_topic_id == task_data.sub_topic_id,
+
+        SubTopic.topic_id == task_data.topic_id
+
     ).first()
 
 

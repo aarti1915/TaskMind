@@ -2,44 +2,90 @@ import api from "./axios";
 
 
 
-// Get all study sessions
+// Start Session
 
-export const getStudySessions = ()=>{
+export const startSession = (data)=>{
 
-    return api.get(
-        "/study-sessions"
-    );
-
-};
-
-
-
-
-// Create study session
-
-export const createStudySession = (data)=>{
 
     return api.post(
 
-        "/study-sessions",
+        "/study-sessions/start",
 
         data
 
     );
 
+
 };
 
 
 
 
-// Delete study session
+
+// Get Active Session
+
+export const getActiveSession = ()=>{
+
+
+    return api.get(
+
+        "/study-sessions/active"
+
+    );
+
+
+};
+
+
+
+
+
+// End Session
+
+export const endSession = (id)=>{
+
+
+    return api.patch(
+
+        `/study-sessions/${id}/end`
+
+    );
+
+
+};
+
+
+
+
+
+// Get Session History
+
+export const getStudySessions = ()=>{
+
+
+    return api.get(
+
+        "/study-sessions"
+
+    );
+
+
+};
+
+
+
+
+
+// Delete Session
 
 export const deleteStudySession = (id)=>{
+
 
     return api.delete(
 
         `/study-sessions/${id}`
 
     );
+
 
 };

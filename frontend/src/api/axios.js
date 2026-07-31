@@ -9,9 +9,6 @@ const api = axios.create({
 
 
 
-
-// Attach token automatically
-
 api.interceptors.request.use(
 
     (config)=>{
@@ -21,35 +18,30 @@ api.interceptors.request.use(
         localStorage.getItem("token");
 
 
+        console.log("TOKEN SENT:", token);
+
+
 
         if(token){
-
 
             config.headers.Authorization =
             `Bearer ${token}`;
 
-
         }
 
 
-
         return config;
-
 
     },
 
 
     (error)=>{
 
-
         return Promise.reject(error);
-
 
     }
 
 );
-
-
 
 
 

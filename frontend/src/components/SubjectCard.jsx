@@ -2,9 +2,12 @@ import { useState } from "react";
 
 
 import {
-    getSubjectTopics,
     deleteSubject
 } from "../api/subjects";
+
+import {
+    getTopicsBySubject
+} from "../api/topics";
 
 
 import TopicList from "./TopicList";
@@ -38,7 +41,7 @@ function SubjectCard({
 
 
         const response =
-        await getSubjectTopics(
+        await getTopicsBySubject(
 
             subject.subject_id
 

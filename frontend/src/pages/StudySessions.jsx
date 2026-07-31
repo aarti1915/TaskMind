@@ -1,65 +1,115 @@
-import { useEffect, useState } from "react";
-
-
-import {
-    getSubjects
-} from "../api/subjects";
-
-
-import {
-    getTopicsBySubject
-} from "../api/topics";
-
-
-import {
-    getSubTopicsByTopic
-} from "../api/subTopics";
-
-
-import {
-    getStudySessions,
-    createStudySession,
-    deleteStudySession
-} from "../api/studySessions";
-
-
-
+import {useEffect, useState} from "react";
+import api from "../api/axios";
 
 
 function StudySessions(){
 
+    const [subjects,setSubjects]=useState([]);
+    const [topics,setTopics]=useState([]);
+    const [subTopics,setSubTopics]=useState([]);
 
+    const [subjectId,setSubjectId]=useState("");
+    const [topicId,setTopicId]=useState("");
+    const [subTopicId,setSubTopicId]=useState("");
 
-    const [subjects,setSubjects] = useState([]);
+    const [activeSession,setActiveSession]=useState(null);
+    const [sessions,setSessions]=useState([]);
 
-    const [topics,setTopics] = useState([]);
-
-    const [subTopics,setSubTopics] = useState([]);
-
-    const [sessions,setSessions] = useState([]);
-
-
-
-
-
-    const [form,setForm] = useState({
-
-        subject_id:"",
-
-        topic_id:"",
-
-        sub_topic_id:"",
-
-        study_date:"",
-
-        duration_minutes:"",
-
-        notes:""
-
-    });
+    const [timer,setTimer]=useState(0);
 
 
 
+    useEffect(()=>{
+
+        loadSubjects();
+        loadSessions();
+        loadActiveSession();
+
+    },[]);
+
+
+
+    const loadSubjects=async()=>{
+
+        const res =
+        await api.get("/subjects");
+
+        setSubjects(res.data);
+
+    };
+
+
+
+    const loadTopics=async(id)=>{
+
+
+        setSubjectId(id);
+        setTopicId("");
+        setSubTopicId("");
+
+        const res =
+        await api.get(
+            `/topics/subject/${id}`
+        );
+
+
+        setTopics(res.data);
+
+        setSubTopics([]);
+
+    };
+
+
+
+    const loadSubTopics=async(id)=>{
+
+
+        setTopicId(id);
+        setSubTopicId("");
+
+
+        const res =
+        await api.get(
+            `/sub-topics/topic/${id}`
+        );
+
+
+        setSubTopics(res.data);
+
+
+    };
+
+
+
+
+    const loadSessions=async()=>{
+
+        const res =
+        await api.get(
+            "/study-sessions"
+        );
+
+
+        setSessions(res.data);
+
+    };
+
+
+
+
+    const loadActiveSession=async()=>{
+
+
+        const res =
+        await api.get(
+            "/study-sessions/active"
+        );
+
+
+        setActiveSession(res.data);
+
+
+    };
 
 
 
@@ -68,564 +118,425 @@ function StudySessions(){
     useEffect(()=>{
 
 
-        loadSubjects();
+        if(!activeSession){
 
-        loadSessions();
+            setTimer(0);
+            return;
 
-
-    },[]);
-
-
+        }
 
 
 
+        const start =
+        new Date(
+            activeSession.start_time
+        ).getTime();
 
 
 
-
-    const loadSubjects = async()=>{
-
-
-        const res =
-        await getSubjects();
+        const update=()=>{
 
 
-        setSubjects(
-            res.data
+            const now =
+            Date.now();
+
+
+
+            const diff =
+            Math.floor(
+                (now-start)/1000
+            );
+
+
+
+            setTimer(
+                diff > 0 ? diff : 0
+            );
+
+
+        };
+
+
+
+        update();
+
+
+        const interval =
+        setInterval(
+            update,
+            1000
         );
 
 
-    };
+        return ()=>clearInterval(interval);
 
 
 
+    },[activeSession]);
 
 
 
 
-    const loadSessions = async()=>{
 
 
-        try{
+    const startSession=async()=>{
 
 
-            const res =
-            await getStudySessions();
+        await api.post(
 
-
-            setSessions(
-                res.data
-            );
-
-
-        }
-
-        catch(error){
-
-
-            console.log(
-                error.response?.data
-            );
-
-
-        }
-
-
-    };
-
-
-
-
-
-
-
-
-
-    const selectSubject = async(e)=>{
-
-
-        const subjectId =
-        e.target.value;
-
-
-
-        setForm({
-
-            ...form,
-
-            subject_id:subjectId,
-
-            topic_id:"",
-
-            sub_topic_id:""
-
-        });
-
-
-
-        setTopics([]);
-
-        setSubTopics([]);
-
-
-
-
-        if(subjectId){
-
-
-            const res =
-            await getTopicsBySubject(
-                subjectId
-            );
-
-
-            setTopics(
-                res.data
-            );
-
-
-        }
-
-
-    };
-
-
-
-
-
-
-
-
-
-    const selectTopic = async(e)=>{
-
-
-        const topicId =
-        e.target.value;
-
-
-
-        setForm({
-
-            ...form,
-
-            topic_id:topicId,
-
-            sub_topic_id:""
-
-        });
-
-
-
-        setSubTopics([]);
-
-
-
-
-        if(topicId){
-
-
-            const res =
-            await getSubTopicsByTopic(
-                topicId
-            );
-
-
-            setSubTopics(
-                res.data
-            );
-
-
-        }
-
-
-    };
-
-
-
-
-
-
-
-
-
-    const changeHandler=(e)=>{
-
-
-        setForm({
-
-            ...form,
-
-            [e.target.name]:
-            e.target.value
-
-        });
-
-
-    };
-
-
-
-
-
-
-
-
-
-    const saveSession=async(e)=>{
-
-
-        e.preventDefault();
-
-
-
-        await createStudySession(form);
-
-
-
-        setForm({
-
-            subject_id:"",
-
-            topic_id:"",
-
-            sub_topic_id:"",
-
-            study_date:"",
-
-            duration_minutes:"",
-
-            notes:""
-
-        });
-
-
-
-        setTopics([]);
-
-        setSubTopics([]);
-
-
-
-        loadSessions();
-
-
-    };
-
-
-
-
-
-
-
-
-
-    const removeSession=async(id)=>{
-
-
-        await deleteStudySession(id);
-
-
-        loadSessions();
-
-
-    };
-
-
-
-
-
-
-
-
-    return (
-
-        <div>
-
-
-            <h1>
-                Study Sessions
-            </h1>
-
-
-
-
-
-            <form
-
-            onSubmit={saveSession}
-
-            >
-
-
-
-
-            <select
-
-            value={form.subject_id}
-
-            onChange={selectSubject}
-
-            >
-
-                <option value="">
-                    Select Subject
-                </option>
-
-
-                {
-                subjects.map(s=>(
-
-                    <option
-
-                    key={s.subject_id}
-
-                    value={s.subject_id}
-
-                    >
-
-                    {s.name}
-
-                    </option>
-
-                ))
-                }
-
-
-            </select>
-
-
-
-
-
-
-            <select
-
-            value={form.topic_id}
-
-            onChange={selectTopic}
-
-            >
-
-                <option value="">
-                    Select Topic
-                </option>
-
-
-
-                {
-                topics.map(t=>(
-
-                    <option
-
-                    key={t.topic_id}
-
-                    value={t.topic_id}
-
-                    >
-
-                    {t.name}
-
-                    </option>
-
-                ))
-                }
-
-
-            </select>
-
-
-
-
-
-
-
-            <select
-
-            name="sub_topic_id"
-
-            value={form.sub_topic_id}
-
-            onChange={changeHandler}
-
-            >
-
-                <option value="">
-                    Select Sub Topic
-                </option>
-
-
-
-                {
-                subTopics.map(s=>(
-
-                    <option
-
-                    key={s.sub_topic_id}
-
-                    value={s.sub_topic_id}
-
-                    >
-
-                    {s.name}
-
-                    </option>
-
-                ))
-                }
-
-
-            </select>
-
-
-
-
-
-
-
-            <input
-
-            type="date"
-
-            name="study_date"
-
-            value={form.study_date}
-
-            onChange={changeHandler}
-
-            />
-
-
-
-
-
-
-
-            <input
-
-            type="number"
-
-            name="duration_minutes"
-
-            placeholder="Duration"
-
-            value={form.duration_minutes}
-
-            onChange={changeHandler}
-
-            />
-
-
-
-
-
-
-
-            <textarea
-
-            name="notes"
-
-            placeholder="Notes"
-
-            value={form.notes}
-
-            onChange={changeHandler}
-
-            />
-
-
-
-
-
-
-            <button>
-
-                Add Session
-
-            </button>
-
-
-
-            </form>
-
-
-
-
-
-
-
-            <h2>
-                Previous Sessions
-            </h2>
-
-
-
-
+            "/study-sessions/start",
 
             {
 
-            sessions.map(session=>(
+                subject_id:Number(subjectId),
 
+                topic_id:Number(topicId),
 
-                <div
-
-                key={
-                    session.session_id
-                }
-
-                >
-
-
-                    <p>
-
-                    {session.study_date}
-
-                    </p>
-
-
-
-                    <p>
-
-                    {session.duration_minutes}
-                    minutes
-
-                    </p>
-
-
-
-                    <button
-
-                    onClick={()=>removeSession(
-                        session.session_id
-                    )}
-
-                    >
-
-                    Delete
-
-                    </button>
-
-
-
-                </div>
-
-
-            ))
+                sub_topic_id:Number(subTopicId)
 
             }
 
+        );
+
+
+
+        loadActiveSession();
+        loadSessions();
+
+
+    };
 
 
 
 
-        </div>
 
 
+
+    const endSession=async()=>{
+
+
+        await api.patch(
+
+            `/study-sessions/${activeSession.session_id}/end`
+
+        );
+
+
+        setActiveSession(null);
+
+        setTimer(0);
+
+
+        loadSessions();
+
+
+    };
+
+
+
+
+
+
+    const deleteSession=async(id)=>{
+
+
+        await api.delete(
+
+            `/study-sessions/${id}`
+
+        );
+
+
+        loadSessions();
+
+
+    };
+
+
+
+
+
+    const hours =
+    Math.floor(timer/3600);
+
+
+    const minutes =
+    Math.floor(
+        (timer%3600)/60
     );
+
+
+    const seconds =
+    timer%60;
+
+
+
+
+
+return(
+
+<div>
+
+
+<h1>
+Study Sessions
+</h1>
+
+
+
+{
+activeSession ?
+
+
+<div>
+
+<h2>
+Session Running
+</h2>
+
+
+<h3>
+
+{hours}h {minutes}m {seconds}s
+
+</h3>
+
+
+
+<button onClick={endSession}>
+
+End Session
+
+</button>
+
+
+</div>
+
+
+
+:
+
+<div>
+
+
+<select
+
+value={subjectId}
+
+onChange={(e)=>
+loadTopics(e.target.value)
+}
+
+>
+
+
+<option value="">
+
+Select Subject
+
+</option>
+
+
+{
+
+subjects.map(subject=>(
+
+
+<option
+
+key={subject.subject_id}
+
+value={subject.subject_id}
+
+>
+
+{subject.name}
+
+</option>
+
+
+))
+
+}
+
+
+</select>
+
+
+
+
+
+
+<select
+
+value={topicId}
+
+onChange={(e)=>
+loadSubTopics(e.target.value)
+}
+
+>
+
+
+<option value="">
+
+Select Topic
+
+</option>
+
+
+{
+
+topics.map(topic=>(
+
+
+<option
+
+key={topic.topic_id}
+
+value={topic.topic_id}
+
+>
+
+{topic.name}
+
+</option>
+
+
+))
+
+}
+
+
+</select>
+
+
+
+
+
+
+<select
+
+value={subTopicId}
+
+onChange={(e)=>
+setSubTopicId(e.target.value)
+}
+
+>
+
+
+<option value="">
+
+Select Sub Topic
+
+</option>
+
+
+{
+
+subTopics.map(subTopic=>(
+
+
+<option
+
+key={subTopic.sub_topic_id}
+
+value={subTopic.sub_topic_id}
+
+>
+
+{subTopic.name}
+
+</option>
+
+
+))
+
+}
+
+
+</select>
+
+
+
+
+
+<button onClick={startSession}>
+
+Start Session
+
+</button>
+
+
+</div>
 
 
 }
 
+
+
+
+
+<h2>
+Session History
+</h2>
+
+
+
+{
+
+sessions.map(session=>(
+
+
+<div
+
+key={session.session_id}
+
+>
+
+
+<p>
+
+Duration:
+{" "}
+{session.duration_minutes || 0}
+minutes
+
+</p>
+
+
+
+<button
+
+onClick={()=>
+deleteSession(session.session_id)
+}
+
+>
+
+Delete
+
+</button>
+
+
+
+</div>
+
+
+))
+
+}
+
+
+
+</div>
+
+
+);
+
+
+}
 
 
 export default StudySessions;
