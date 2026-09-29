@@ -21,6 +21,25 @@ export const startSession = (data)=>{
 
 
 
+// Log a past session manually (studied outside the app)
+
+export const createManualSession = (data)=>{
+
+
+    return api.post(
+
+        "/study-sessions/manual",
+
+        data
+
+    );
+
+
+};
+
+
+
+
 
 // Get Active Session
 

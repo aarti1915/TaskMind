@@ -9,6 +9,7 @@ from app.models import Subject, Topic, SubTopic
 
 from app.schemas.study_session import (
     StudySessionCreate,
+    StudySessionManualCreate,
     StudySessionResponse
 )
 
@@ -159,6 +160,160 @@ def start_session(
 
     db.refresh(session)
 
+
+
+    return session
+
+
+
+
+@router.post(
+    "/study-sessions/manual",
+    response_model=StudySessionResponse
+)
+def create_manual_session(
+
+    data: StudySessionManualCreate,
+
+    db: Session = Depends(get_db),
+
+    current_user = Depends(get_current_user)
+
+):
+
+
+    subject = db.query(Subject).filter(
+
+        Subject.subject_id == data.subject_id,
+
+        Subject.user_id == current_user.user_id
+
+    ).first()
+
+
+
+    if not subject:
+
+        raise HTTPException(
+
+            status_code=404,
+
+            detail="Subject not found"
+
+        )
+
+
+
+    topic = db.query(Topic).filter(
+
+        Topic.topic_id == data.topic_id,
+
+        Topic.subject_id == data.subject_id
+
+    ).first()
+
+
+
+    if not topic:
+
+        raise HTTPException(
+
+            status_code=404,
+
+            detail="Topic does not belong to subject"
+
+        )
+
+
+
+    sub_topic = db.query(SubTopic).filter(
+
+        SubTopic.sub_topic_id == data.sub_topic_id,
+
+        SubTopic.topic_id == data.topic_id
+
+    ).first()
+
+
+
+    if not sub_topic:
+
+        raise HTTPException(
+
+            status_code=404,
+
+            detail="Sub-topic does not belong to topic"
+
+        )
+
+
+
+    # Normalize to naive datetimes (matching how start_time/end_time are
+    # stored everywhere else via datetime.now()) so a timezone-aware
+    # payload can never crash this comparison with a TypeError.
+    start_time = data.start_time.replace(tzinfo=None)
+    end_time = data.end_time.replace(tzinfo=None)
+
+
+
+    if end_time <= start_time:
+
+        raise HTTPException(
+
+            status_code=400,
+
+            detail="End time must be after start time"
+
+        )
+
+
+
+    if start_time > datetime.now():
+
+        raise HTTPException(
+
+            status_code=400,
+
+            detail="Start time cannot be in the future"
+
+        )
+
+
+
+    duration_minutes = int(
+
+        (
+            end_time -
+            start_time
+        ).total_seconds() / 60
+
+    )
+
+
+    session = StudySession(
+
+        user_id=current_user.user_id,
+
+        subject_id=data.subject_id,
+
+        topic_id=data.topic_id,
+
+        sub_topic_id=data.sub_topic_id,
+
+        start_time=start_time,
+
+        end_time=end_time,
+
+        duration_minutes=duration_minutes
+
+    )
+
+
+    db.add(session)
+
+    db.commit()
+
+    db.refresh(session)
 
 
     return session

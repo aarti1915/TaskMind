@@ -56,3 +56,4 @@ class Topic(Base):
     back_populates="topic",
     cascade="all, delete-orphan"
     )
+    

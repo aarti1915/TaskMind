@@ -17,6 +17,7 @@ def get_profile(
         "user_id": current_user.user_id,
         "full_name": current_user.full_name,
         "email": current_user.email,
+        "date_of_birth": current_user.date_of_birth,
         "study_level": current_user.study_level
     }
 
@@ -32,9 +33,6 @@ def update_profile(
 
     if profile.date_of_birth is not None:
         current_user.date_of_birth = profile.date_of_birth
-
-    if profile.timezone is not None:
-        current_user.timezone = profile.timezone
 
     if profile.study_level is not None:
         current_user.study_level = profile.study_level

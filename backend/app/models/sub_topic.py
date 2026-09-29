@@ -50,3 +50,4 @@ class SubTopic(Base):
     back_populates="sub_topic",
     cascade="all, delete-orphan"
     )
+    

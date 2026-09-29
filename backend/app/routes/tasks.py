@@ -23,7 +23,6 @@ from app.schemas import (
 router = APIRouter()
 
 
-
 # Create Task
 
 @router.post(
@@ -36,12 +35,10 @@ def create_task(
     current_user = Depends(get_current_user)
 ):
 
-
     subject = db.query(Subject).filter(
         Subject.subject_id == task_data.subject_id,
         Subject.user_id == current_user.user_id
     ).first()
-
 
     if not subject:
 
@@ -50,21 +47,21 @@ def create_task(
             detail="Subject not found"
         )
 
-
-
+    # Was previously only checking Topic.topic_id, with no check that
+    # the topic belongs to this subject OR to the current user. That
+    # allowed tasks to reference another user's topic, or a topic
+    # belonging to a different subject entirely.
     topic = db.query(Topic).filter(
-        Topic.topic_id == task_data.topic_id
+        Topic.topic_id == task_data.topic_id,
+        Topic.subject_id == task_data.subject_id
     ).first()
-
 
     if not topic:
 
         raise HTTPException(
             status_code=404,
-            detail="Topic not found"
+            detail="Topic does not belong to subject"
         )
-
-
 
     sub_topic = db.query(SubTopic).filter(
 
@@ -74,17 +71,12 @@ def create_task(
 
     ).first()
 
-
     if not sub_topic:
 
         raise HTTPException(
             status_code=404,
-            detail="Sub topic not found"
+            detail="Sub topic does not belong to topic"
         )
-
-
-
-
 
     new_task = Task(
 
@@ -106,20 +98,13 @@ def create_task(
 
     )
 
-
-
     db.add(new_task)
 
     db.commit()
 
     db.refresh(new_task)
 
-
-
     return new_task
-
-
-
 
 
 # Get All Tasks
@@ -136,21 +121,13 @@ def get_tasks(
 
 ):
 
-
     tasks = db.query(Task).filter(
 
         Task.user_id == current_user.user_id
 
     ).all()
 
-
-
     return tasks
-
-
-
-
-
 
 
 # Today's Tasks
@@ -167,7 +144,6 @@ def get_today_tasks(
 
 ):
 
-
     tasks = db.query(Task).filter(
 
         Task.user_id == current_user.user_id,
@@ -176,14 +152,7 @@ def get_today_tasks(
 
     ).all()
 
-
-
     return tasks
-
-
-
-
-
 
 
 # Upcoming Tasks
@@ -200,7 +169,6 @@ def get_upcoming_tasks(
 
 ):
 
-
     tasks = db.query(Task).filter(
 
         Task.user_id == current_user.user_id,
@@ -209,14 +177,7 @@ def get_upcoming_tasks(
 
     ).all()
 
-
-
     return tasks
-
-
-
-
-
 
 
 # Update Task
@@ -237,7 +198,6 @@ def update_task(
 
 ):
 
-
     task = db.query(Task).filter(
 
         Task.task_id == task_id,
@@ -245,8 +205,6 @@ def update_task(
         Task.user_id == current_user.user_id
 
     ).first()
-
-
 
     if not task:
 
@@ -258,46 +216,27 @@ def update_task(
 
         )
 
-
-
-
     if task_data.title is not None:
 
         task.title = task_data.title
-
-
 
     if task_data.description is not None:
 
         task.description = task_data.description
 
-
-
     if task_data.priority is not None:
 
         task.priority = task_data.priority
-
-
 
     if task_data.due_date is not None:
 
         task.due_date = task_data.due_date
 
-
-
-
     db.commit()
 
     db.refresh(task)
 
-
-
     return task
-
-
-
-
-
 
 
 # Complete Task
@@ -316,7 +255,6 @@ def complete_task(
 
 ):
 
-
     task = db.query(Task).filter(
 
         Task.task_id == task_id,
@@ -324,8 +262,6 @@ def complete_task(
         Task.user_id == current_user.user_id
 
     ).first()
-
-
 
     if not task:
 
@@ -337,26 +273,15 @@ def complete_task(
 
         )
 
-
-
     task.status = TaskStatus.COMPLETED
 
     task.completed_at = datetime.utcnow()
-
-
 
     db.commit()
 
     db.refresh(task)
 
-
-
     return task
-
-
-
-
-
 
 
 # Delete Task
@@ -374,7 +299,6 @@ def delete_task(
 
 ):
 
-
     task = db.query(Task).filter(
 
         Task.task_id == task_id,
@@ -382,8 +306,6 @@ def delete_task(
         Task.user_id == current_user.user_id
 
     ).first()
-
-
 
     if not task:
 
@@ -395,13 +317,9 @@ def delete_task(
 
         )
 
-
-
     db.delete(task)
 
     db.commit()
-
-
 
     return {
 

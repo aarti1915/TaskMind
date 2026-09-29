@@ -1,13 +1,19 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 from datetime import date, datetime
 
+
 class UserCreate(BaseModel):
-    full_name: str
+    full_name: str = Field(min_length=1, max_length=100)
     email: EmailStr
-    password: str
+    password: str = Field(
+        min_length=8,
+        max_length=128,
+        description="Must be at least 8 characters"
+    )
     date_of_birth: date | None = None
     timezone: str = "Asia/Kolkata"
     study_level: str
+
 
 class UserResponse(BaseModel):
     user_id: int
@@ -22,4 +28,3 @@ class UserResponse(BaseModel):
 
     class Config:
         from_attributes = True
-

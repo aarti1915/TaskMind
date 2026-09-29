@@ -1,7 +1,8 @@
 import {
     BrowserRouter,
     Routes,
-    Route
+    Route,
+    Navigate
 } from "react-router-dom";
 
 import Login from "./pages/Login";
@@ -10,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import Subjects from "./pages/Subjects";
 import StudySessions from "./pages/StudySessions";
 import Profile from "./pages/Profile";
+import Settings from "./pages/Settings";
 import Planner from "./pages/Planner";
 
 import Layout from "./components/Layout";
@@ -41,6 +43,11 @@ function App(){
                 >
 
                 <Route
+                    index
+                    element={<Navigate to="/dashboard" replace />}
+                />
+
+                <Route
                     path="dashboard"
                     element={<Dashboard/>}
                 />
@@ -61,6 +68,11 @@ function App(){
                 />
 
                 <Route
+                    path="settings"
+                    element={<Settings/>}
+                />
+
+                <Route
                     path="planner"
                     element={<Planner />}
                 />
@@ -69,8 +81,10 @@ function App(){
 
                 </Route>
 
-
-
+                <Route
+                path="*"
+                element={<Navigate to="/dashboard" replace />}
+                />
 
 
 

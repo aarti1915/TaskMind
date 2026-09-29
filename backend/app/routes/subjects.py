@@ -3,14 +3,13 @@ from sqlalchemy.orm import Session
 
 from app.database.connection import get_db
 from app.models import Subject
-from app.schemas import SubjectCreate
+from app.schemas import SubjectCreate, SubjectResponse
 from app.utils.security import get_current_user
 
 from app.core.response import success_response
 
 
 router = APIRouter()
-
 
 
 @router.post("/subjects")
@@ -24,7 +23,6 @@ def create_subject(
 
 ):
 
-
     new_subject = Subject(
 
         user_id=current_user.user_id,
@@ -35,25 +33,19 @@ def create_subject(
 
     )
 
-
     db.add(new_subject)
 
     db.commit()
 
     db.refresh(new_subject)
 
-
-
     return success_response(
 
-        data=new_subject,
+        data=SubjectResponse.model_validate(new_subject),
 
         message="Subject created successfully"
 
     )
-
-
-
 
 
 @router.get("/subjects")
@@ -65,25 +57,21 @@ def get_subjects(
 
 ):
 
-
     subjects = db.query(Subject).filter(
 
         Subject.user_id == current_user.user_id
 
     ).all()
 
-
-
     return success_response(
 
-        data=subjects,
+        data=[
+            SubjectResponse.model_validate(s) for s in subjects
+        ],
 
         message="Subjects fetched successfully"
 
     )
-
-
-
 
 
 @router.get("/subjects/{subject_id}")
@@ -97,7 +85,6 @@ def get_subject(
 
 ):
 
-
     subject = db.query(Subject).filter(
 
         Subject.subject_id == subject_id,
@@ -105,8 +92,6 @@ def get_subject(
         Subject.user_id == current_user.user_id
 
     ).first()
-
-
 
     if not subject:
 
@@ -118,17 +103,13 @@ def get_subject(
 
         )
 
-
     return success_response(
 
-        data=subject,
+        data=SubjectResponse.model_validate(subject),
 
         message="Subject fetched successfully"
 
     )
-
-
-
 
 
 @router.patch("/subjects/{subject_id}")
@@ -144,7 +125,6 @@ def update_subject(
 
 ):
 
-
     subject = db.query(Subject).filter(
 
         Subject.subject_id == subject_id,
@@ -152,8 +132,6 @@ def update_subject(
         Subject.user_id == current_user.user_id
 
     ).first()
-
-
 
     if not subject:
 
@@ -165,30 +143,21 @@ def update_subject(
 
         )
 
-
-
     subject.name = subject_data.name
 
     subject.description = subject_data.description
-
-
 
     db.commit()
 
     db.refresh(subject)
 
-
-
     return success_response(
 
-        data=subject,
+        data=SubjectResponse.model_validate(subject),
 
         message="Subject updated successfully"
 
     )
-
-
-
 
 
 @router.delete("/subjects/{subject_id}")
@@ -202,7 +171,6 @@ def delete_subject(
 
 ):
 
-
     subject = db.query(Subject).filter(
 
         Subject.subject_id == subject_id,
@@ -210,8 +178,6 @@ def delete_subject(
         Subject.user_id == current_user.user_id
 
     ).first()
-
-
 
     if not subject:
 
@@ -223,13 +189,9 @@ def delete_subject(
 
         )
 
-
-
     db.delete(subject)
 
     db.commit()
-
-
 
     return success_response(
 

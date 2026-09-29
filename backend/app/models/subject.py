@@ -55,3 +55,4 @@ class Subject(Base):
     back_populates="subject",
     cascade="all, delete-orphan"
     )
+    

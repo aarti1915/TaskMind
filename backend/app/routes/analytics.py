@@ -368,30 +368,27 @@ def study_streak(
 
 
 
-    current_streak = 1
+    today = date.today()
 
+    last_studied = dates[0]
 
+    current_streak = 0
 
-    for i in range(len(dates)-1):
+    if last_studied == today or last_studied == today - timedelta(days=1):
 
+        current_streak = 1
 
-        difference = (
+        for i in range(len(dates) - 1):
 
-            dates[i] -
+            difference = (dates[i] - dates[i + 1]).days
 
-            dates[i+1]
+            if difference == 1:
 
-        ).days
+                current_streak += 1
 
+            else:
 
-
-        if difference == 1:
-
-            current_streak += 1
-
-        else:
-
-            break
+                break
 
 
 

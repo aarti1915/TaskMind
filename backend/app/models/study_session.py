@@ -146,7 +146,6 @@ class StudySession(Base):
 
     )
 
-
     topic = relationship(
 
         "Topic",

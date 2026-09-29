@@ -12,6 +12,20 @@ class StudySessionCreate(BaseModel):
 
 
 
+class StudySessionManualCreate(BaseModel):
+
+    subject_id: int
+
+    topic_id: int
+
+    sub_topic_id: int
+
+    start_time: datetime
+
+    end_time: datetime
+
+
+
 class StudySessionResponse(BaseModel):
 
     session_id: int

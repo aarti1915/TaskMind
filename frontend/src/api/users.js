@@ -13,3 +13,18 @@ export const getProfile = ()=>{
 
 
 };
+
+
+export const updateProfile = (data)=>{
+
+
+    return api.patch(
+
+        "/profile",
+
+        data
+
+    );
+
+
+};

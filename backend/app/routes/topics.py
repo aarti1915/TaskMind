@@ -2,27 +2,22 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from sqlalchemy.orm import Session
 
-
 from app.database.connection import get_db
 
 from app.models.topic import Topic
+from app.models.subject import Subject
 
-from app.schemas.topic import TopicCreate
+from app.schemas.topic import TopicCreate, TopicResponse
 
 from app.utils.security import get_current_user
 
 from app.core.response import success_response
 
 
-
-
 router = APIRouter(
     prefix="/topics",
     tags=["Topics"]
 )
-
-
-
 
 
 @router.post("")
@@ -36,16 +31,35 @@ def create_topic(
 
 ):
 
+    # A topic must belong to a subject owned by the current user —
+    # otherwise anyone could attach a topic to someone else's subject_id.
+    subject = db.query(Subject).filter(
+
+        Subject.subject_id == data.subject_id,
+
+        Subject.user_id == current_user.user_id
+
+    ).first()
+
+    if not subject:
+
+        raise HTTPException(
+
+            status_code=404,
+
+            detail="Subject not found"
+
+        )
 
     topic = Topic(
 
         name=data.name,
 
+        description=data.description,
+
         subject_id=data.subject_id
 
     )
-
-
 
     db.add(topic)
 
@@ -53,21 +67,13 @@ def create_topic(
 
     db.refresh(topic)
 
-
-
     return success_response(
 
-        data=topic,
+        data=TopicResponse.model_validate(topic),
 
         message="Topic created successfully"
 
     )
-
-
-
-
-
-
 
 
 @router.get("")
@@ -79,24 +85,29 @@ def get_topics(
 
 ):
 
+    # Was previously returning ALL users' topics — scope to the
+    # current user's subjects.
+    topics = (
 
-    topics = db.query(Topic).all()
+        db.query(Topic)
 
+        .join(Subject, Topic.subject_id == Subject.subject_id)
 
+        .filter(Subject.user_id == current_user.user_id)
+
+        .all()
+
+    )
 
     return success_response(
 
-        data=topics,
+        data=[
+            TopicResponse.model_validate(t) for t in topics
+        ],
 
         message="Topics fetched successfully"
 
     )
-
-
-
-
-
-
 
 
 @router.get("/subject/{subject_id}")
@@ -110,6 +121,26 @@ def get_topics_by_subject(
 
 ):
 
+    # Verify the subject itself belongs to the current user before
+    # returning its topics — otherwise any logged-in user could read
+    # another user's topics just by guessing a subject_id.
+    subject = db.query(Subject).filter(
+
+        Subject.subject_id == subject_id,
+
+        Subject.user_id == current_user.user_id
+
+    ).first()
+
+    if not subject:
+
+        raise HTTPException(
+
+            status_code=404,
+
+            detail="Subject not found"
+
+        )
 
     topics = (
 
@@ -125,21 +156,15 @@ def get_topics_by_subject(
 
     )
 
-
-
     return success_response(
 
-        data=topics,
+        data=[
+            TopicResponse.model_validate(t) for t in topics
+        ],
 
         message="Topics fetched successfully"
 
     )
-
-
-
-
-
-
 
 
 @router.patch("/{topic_id}")
@@ -155,17 +180,25 @@ def update_topic(
 
 ):
 
+    topic = (
 
-    topic = db.query(Topic).filter(
+        db.query(Topic)
 
-        Topic.topic_id == topic_id
+        .join(Subject, Topic.subject_id == Subject.subject_id)
 
-    ).first()
+        .filter(
 
+            Topic.topic_id == topic_id,
 
+            Subject.user_id == current_user.user_id
+
+        )
+
+        .first()
+
+    )
 
     if not topic:
-
 
         raise HTTPException(
 
@@ -175,7 +208,20 @@ def update_topic(
 
         )
 
+    new_subject = (
+        db.query(Subject)
+        .filter(
+            Subject.subject_id == data.subject_id,
+            Subject.user_id == current_user.user_id
+        )
+        .first()
+    )
 
+    if not new_subject:
+        raise HTTPException(
+            status_code=404,
+            detail="Subject not found"
+        )
 
     topic.name = data.name
 
@@ -183,27 +229,17 @@ def update_topic(
 
     topic.subject_id = data.subject_id
 
-
-
     db.commit()
 
     db.refresh(topic)
 
-
-
     return success_response(
 
-        data=topic,
+        data=TopicResponse.model_validate(topic),
 
         message="Topic updated successfully"
 
     )
-
-
-
-
-
-
 
 
 @router.delete("/{topic_id}")
@@ -217,17 +253,25 @@ def delete_topic(
 
 ):
 
+    topic = (
 
-    topic = db.query(Topic).filter(
+        db.query(Topic)
 
-        Topic.topic_id == topic_id
+        .join(Subject, Topic.subject_id == Subject.subject_id)
 
-    ).first()
+        .filter(
 
+            Topic.topic_id == topic_id,
 
+            Subject.user_id == current_user.user_id
+
+        )
+
+        .first()
+
+    )
 
     if not topic:
-
 
         raise HTTPException(
 
@@ -237,13 +281,9 @@ def delete_topic(
 
         )
 
-
-
     db.delete(topic)
 
     db.commit()
-
-
 
     return success_response(
 
